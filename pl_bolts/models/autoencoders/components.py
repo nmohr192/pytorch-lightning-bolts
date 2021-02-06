@@ -262,7 +262,7 @@ class ResNetDecoder(nn.Module):
     Resnet in reverse order
     """
 
-    def __init__(self, block, layers, latent_dim, input_height, first_conv=False, maxpool1=False):
+    def __init__(self, block, layers, latent_dim, input_height, first_conv=False, maxpool1=False, input_width=None):
         super().__init__()
 
         self.expansion = block.expansion
@@ -270,6 +270,7 @@ class ResNetDecoder(nn.Module):
         self.first_conv = first_conv
         self.maxpool1 = maxpool1
         self.input_height = input_height
+        self.input_width = self.input_height if input_width is None else input_width
 
         self.upscale_factor = 8
 
@@ -335,8 +336,8 @@ def resnet18_encoder(first_conv, maxpool1):
     return ResNetEncoder(EncoderBlock, [2, 2, 2, 2], first_conv, maxpool1)
 
 
-def resnet18_decoder(latent_dim, input_height, first_conv, maxpool1):
-    return ResNetDecoder(DecoderBlock, [2, 2, 2, 2], latent_dim, input_height, first_conv, maxpool1)
+def resnet18_decoder(latent_dim, input_height, first_conv, maxpool1, input_width=None):
+    return ResNetDecoder(DecoderBlock, [2, 2, 2, 2], latent_dim, input_height, first_conv, maxpool1, input_width)
 
 
 def resnet50_encoder(first_conv, maxpool1):
