@@ -273,8 +273,9 @@ class ResNetDecoder(nn.Module):
         self.input_width = self.input_height if input_width is None else input_width
 
         self.upscale_factor = 8
+        self.latent_transform_shape = (input_height // self.upscale_factor, input_width // self.upscale_factor)
 
-        self.linear = nn.Linear(latent_dim, self.inplanes * 4 * 4)
+        self.linear = nn.Linear(latent_dim, self.inplanes * self.latent_transform_shape[0] * self.latent_transform_shape[1])
 
         self.layer1 = self._make_layer(block, 256, layers[0], scale=2)
         self.layer2 = self._make_layer(block, 128, layers[1], scale=2)
@@ -291,9 +292,6 @@ class ResNetDecoder(nn.Module):
             self.upscale_factor *= 2
         else:
             self.upscale = Interpolate(scale_factor=1)
-
-        # interpolate after linear layer using scale factor
-        self.upscale1 = Interpolate(size=input_height // self.upscale_factor)
 
         self.conv1 = nn.Conv2d(64 * block.expansion, 3, kernel_size=3, stride=1, padding=1, bias=False)
 
@@ -319,8 +317,7 @@ class ResNetDecoder(nn.Module):
         # NOTE: replaced this by Linear(in_channels, 514 * 4 * 4)
         # x = F.interpolate(x, scale_factor=4)
 
-        x = x.view(x.size(0), 512 * self.expansion, 4, 4)
-        x = self.upscale1(x)
+        x = x.view(x.size(0), 512 * self.expansion, self.latent_transform_shape[0], self.latent_transform_shape[1])
 
         x = self.layer1(x)
         x = self.layer2(x)
